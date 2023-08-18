@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ModificarDatosService } from './modificar-datos.service';
 import { ApiService } from './api.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   selector: 'app-root',
@@ -17,7 +19,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private _modificarDatos: ModificarDatosService,
-    private _api: ApiService
+    private _api: ApiService,
+    private toastr: ToastrService
   ) { }
   ngOnInit(): void {
     debugger
@@ -29,6 +32,7 @@ export class AppComponent implements OnInit {
         console.log(res)
       },
       error: (error: any) => {
+        this.toastr.error(error.error.detail, 'ERROR!');
         console.log(error)
       }
     })
@@ -36,6 +40,7 @@ export class AppComponent implements OnInit {
       next: (res: any) => console.log(res),
       error: (error: any)=> {
         if (error instanceof HttpErrorResponse) {
+          this.toastr.error(error.error, 'ERROR!');
           console.error('Error status:', error.status);
           console.error('Error message:', error.error);
         }

@@ -7,7 +7,7 @@ import { Observable, throwError } from 'rxjs';
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'https://www.cultura.gob.ar/api/v2.0/'; // Reemplaza esto con la URL real de tu API
+  private apiUrl = 'https://www.cultura.gob.ar/api/v2.0/'; 
 
   constructor(private http: HttpClient) { }
 

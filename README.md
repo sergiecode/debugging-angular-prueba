@@ -1,27 +1,101 @@
-# DebuggingProyect
+# Prueba de manejo de Errores en Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.4.
+Los pasos para implementar el manejo de errores en Angular al utilizar un servicio para realizar solicitudes HTTP a una API externa. Manejando y mostrar errores tanto a nivel del servicio como en los componentes que consumen el servicio.
 
-## Development server
+## Paso 1: Crear el Servicio de API
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+1.  Crea un nuevo servicio llamado `ApiService` utilizando el comando `ng generate service api`. Esto generará un archivo `api.service.ts`.
+    
+2.  Dentro de `api.service.ts`, importa las dependencias necesarias:
+    
 
-## Code scaffolding
+```
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+```
 
-## Build
+3.  Crea el servicio y define la URL base de la API:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private apiUrl = 'https://www.cultura.gob.ar/api/v2.0/'; 
 
-## Running unit tests
+  constructor(private http: HttpClient) { }
+  ```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+4.  Agrega el método `get()` para realizar solicitudes HTTP GET:
 
-## Running end-to-end tests
+```
+get(endpoint: string): Observable<any> {
+    const url = `${this.apiUrl}/${endpoint}`;
+    return this.http.get(url).pipe(
+      catchError((error) => {
+        console.error('Error en la solicitud:', error);
+        return throwError(error);
+      })
+    );
+  }
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+5.  Agrega un método `simularError()` para generar un error simulado:
 
-## Further help
+```
+simularError(): Observable<any> {
+    const mensajeError = 'Ocurrió un error en la solicitud.';
+    const errorResponse = new HttpErrorResponse({
+      error: mensajeError,
+      status: 500,
+      statusText: 'Error interno del servidor'
+    });
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+    return throwError(() => errorResponse);
+  }
+```
+
+## Paso 2: Implementar el Manejo de Errores en un Componente
+
+1.  Crea un nuevo componente utilizando el comando `ng generate component data`. Esto generará un archivo `data.component.ts`.
+    
+2.  En `data.component.ts`, importa el servicio `ApiService` y RxJS:
+    
+```
+import { Component } from '@angular/core';
+import { ApiService } from './api.service';
+import { catchError } from 'rxjs/operators';
+```
+
+3.  En el constructor del componente, inyecta el servicio `ApiService`:
+
+```
+@Component({
+  selector: 'app-data',
+  template: `
+    <button (click)="getData()">Obtener Datos</button>
+  `
+})
+export class DataComponent {
+  constructor(private apiService: ApiService) {}
+```
+
+4.  Agrega el método `getData()` para hacer una solicitud y manejar errores:
+
+
+```
+getData() {
+    this.apiService.get('some-endpoint').pipe(
+      catchError((error) => {
+        console.error('Ocurrió un error:', error);
+        return [];
+      })
+    ).subscribe((data) => {
+      console.log('Datos recibidos:', data);
+    });
+  }
+}
+```
